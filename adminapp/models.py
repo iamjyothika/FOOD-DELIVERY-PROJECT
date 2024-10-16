@@ -20,7 +20,7 @@ class Banner(models.Model):
     def __str__(self):
         return self.banner_name
 class BannerProducts(models.Model):
-    banner_id=models.CharField(max_length=10)
+    banner_id=models.ForeignKey(Banner,on_delete=models.CASCADE,null=True)
     product=models.ForeignKey('vendorapp.Product',on_delete=models.CASCADE,null=True) 
 
 
