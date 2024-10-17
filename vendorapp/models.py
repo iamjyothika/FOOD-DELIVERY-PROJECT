@@ -53,7 +53,30 @@ class SingleproductImages(models.Model):
 
     class Meta:
         db_table = "single_product_images"
+
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,null=True,related_name="variants")
+    vendor=models.ForeignKey(Vendor,on_delete=models.CASCADE,null=True)
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField()
+    attribute=models.CharField(max_length=20)
+    is_variant=models.BooleanField(default=False)
+    def __str__(self):
+        return self.name
+
+class VariantProductImages(models.Model):
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE,null=True,related_name="variant_images")
+    images=models.ImageField(upload_to="variantproductimages")
+    alt_text = models.CharField(max_length=100, null=True,blank=True)
+    
+
+    class Meta:
+        db_table = "variant_product_images"
         
+
+
 
 
 
