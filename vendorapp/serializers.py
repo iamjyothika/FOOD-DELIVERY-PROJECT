@@ -11,8 +11,17 @@ class VendorLoginSerializer(serializers.ModelSerializer):
         model=Vendor
         fields=['email','password']
 
+ 
+
+class SingleImageSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=SingleproductImages
+        fields='__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
+    single_images=SingleImageSerializer(many=True,read_only=True)
+   
     class Meta:
         model=Product
-        fields='__all__'      
+        fields=['id', 'name', 'category', 'price', 'description', 'type', 'single_images']     

@@ -7,3 +7,4 @@ from .models import *
 
 
 admin.site.register(Vendor)
+admin.site.register(SingleproductImages)

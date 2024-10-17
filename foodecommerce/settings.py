@@ -42,6 +42,11 @@ INSTALLED_APPS = [
     'vendorapp',
     'rest_framework'
 ]
+JWT_EXPIRATION_MINUTES = 60
+
+# Enable secure cookies if in production
+SECURE_COOKIE = True if DEBUG is False else False
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
