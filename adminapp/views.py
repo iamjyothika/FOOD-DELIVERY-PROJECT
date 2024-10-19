@@ -4,12 +4,88 @@ from rest_framework import status
 from .models import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from vendorapp.models import *
+from vendorapp.serializers import *
+from .serializers import *
+from datetime import datetime, timedelta
+from django.conf import settings
+import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
-# Create your views here.
+
+
+        
+
+
+class getAdminData(APIView):
+    def get(self,request):
+        try :
+            admin = User.objects.all()
+            serializer = AdminSerializer(admin, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("Exception Error   :",e)
+            
+        
+
+
+# class AdminLogin(APIView):
+#     def post(self, request):
+#         try:
+#             email=request.data['email']
+#             password=request.data['password']
+            
+#             admin = User.objects.filter(email = email).first()
+#             if admin and admin.check_password(password):
+#                 expiration_time = datetime.utcnow() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
+#                 admin_token = {
+#                         'id': admin.pk, 
+#                         'email': admin.email,
+#                         'name':admin.username,
+#                         'exp': expiration_time,
+#                         'iat': datetime.utcnow() 
+#                 }
+#                 token = jwt.encode(admin_token, settings.SECRET_KEY, algorithm='HS256')
+#                 response = Response({"message": "Login successful","token": token,'name':admin.username,'contact':admin.phone}, status=status.HTTP_200_OK)
+#                 return response
+#             else:
+#                 print("invalid password")
+#                 return Response({'error': 'Invalid Email or Password'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+#         except Exception as e:
+#             print("Exception Error   :",e)
+#             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+    
+
+
+
 class CategoryView(APIView):
     def get(self,request):
         try:
+            # token=request.headers.get("Authorization")
+            # if not token:
+            #     return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            # try:
+            #     token = token.split(' ')[1]
+            #     decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            # except (IndexError, ExpiredSignatureError, InvalidTokenError):
+            #     return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            # admin_id = decoded_data.get('id')
+            # if not admin_id:
+            #     return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # vendor = Vendor.objects.filter(pk=admin_id).first()
+            # if not vendor:
+            #     return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.all()
             serializer=CategorySerializer(category,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -29,7 +105,8 @@ class CategoryView(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-class CategoryDetailView(APIView):       
+class CategoryDetailView(APIView):
+           
     
     def put(self,request,pk):
         try:
@@ -58,7 +135,17 @@ class CategoryDetailView(APIView):
 
 
 
-
+class BannerCreate(APIView):
+    def post(self,request):
+        try:
+            serializer_obj=BannerSerializer(data=request.data)
+            if serializer_obj.is_valid():
+                serializer_obj.save()
+                return Response(serializer_obj.data,status=status.HTTP_201_CREATED)
+            return Response(serializer_obj.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
         
 
         
@@ -71,16 +158,37 @@ class CategoryDetailView(APIView):
 
           
 class BannerView(APIView):
-    def post(self,request):
+    def post(self, request):
         try:
-            banner_serializer=BannerSerializer(data=request.data)
-            if banner_serializer.is_valid():
-                banner_serializer.save()
-                return Response(banner_serializer.data,status=status.HTTP_201_CREATED)
-            return Response(banner_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            banner_id = request.data.get('id')
+            print(banner_id)
+            if banner_id:
+                check_banner = Banner.objects.filter(pk=banner_id).first()
+                if check_banner:
+                    products = request.data.get('products')  # Assuming this is a list of product IDs
+                    if not products:  # Check if products are provided
+                        return Response({'error': 'No products provided'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    for product_id in products:
+                        try:
+                            product = Product.objects.get(pk=product_id)  # Ensure product exists
+                            BannerProducts.objects.create(banner=check_banner, product=product)  # Save BannerProducts
+                        except Product.DoesNotExist:
+                            return Response(
+                                {'error': f'Product with id {product_id} does not exist'}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                    
+                    return Response({'message':'Banners added for the required products'},status=status.HTTP_201_CREATED)  # Successful creation of all BannerProducts
+                else:
+                    return Response({'message':"Banner not found"},status=status.HTTP_404_NOT_FOUND)  # Banner not found
+            else:
+                return Response({'message':"No banner id is provided"},status=status.HTTP_400_BAD_REQUEST)  # No banner ID provided
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  # Internal server error
+
+
 
     def get(self,request):
         try:
@@ -115,11 +223,102 @@ class BannerDetailView(APIView):
         except Banner.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+
+        
             
 
+
+
+        
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
             
 
+class AllProductListView(APIView):
+    def get(self,request):
+        try:
+            product=Product.objects.all()
+            serializer=ProductSerializersssssssssss(product,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Product.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
+
+
+class AllVendorListView(APIView):
+    def get(self,request):
+        try:
+            vendor=Vendor.objects.all()
+            vendor_serializer=VendorSerializer(vendor,many=True)
+            return Response(vendor_serializer.data,status.HTTP_200_OK)
+        except Vendor.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class VendorProductDetailView(APIView):
+
+    def get(self,request,pk):
+        try:
+            vendor=Vendor.objects.get(pk=pk)
+            print(vendor)
+            product=Product.objects.filter(vendor=vendor)
+            
+            product_serializer=ProductSerializersssssssssss(product,many=True)
+            return Response(product_serializer.data,status=status.HTTP_200_OK)
+        except Vendor.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+
+
+       
 
 
     

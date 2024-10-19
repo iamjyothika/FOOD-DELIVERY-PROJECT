@@ -172,7 +172,7 @@ class ProductVariantAdd(APIView):
             return Response({'error': 'An error occurred', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 class ProductVariantView(APIView):
-    def get(self, request, product_id):
+    def get(self, request, product_variant_id):
         try:
             token=request.headers.get('Authorization')
             if not token:
@@ -190,7 +190,7 @@ class ProductVariantView(APIView):
             if not vendor:
                 return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
         
-            product_variant = ProductVariant.objects.filter(pk=product_id).first()
+            product_variant = ProductVariant.objects.filter(pk=product_variant_id).first()
             if not product_variant:
                     return Response({'error': 'Product variant not found'}, status=status.HTTP_404_NOT_FOUND)
 
