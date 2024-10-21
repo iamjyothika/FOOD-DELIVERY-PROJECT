@@ -104,6 +104,9 @@ class ProductVariantSerializerzz(serializers.ModelSerializer):
         model = ProductVariant
         fields = ['id', 'name', 'price', 'stock', 'attribute', 'description', 'created_time', 'salesprice', 'discount','variant_images']
 
+  
+
+
      
 
 

@@ -76,21 +76,21 @@ class AdminLogin(APIView):
 class CategoryView(APIView):
     def get(self,request):
         try:
-            # token=request.headers.get("Authorization")
-            # if not token:
-            #     return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
-            # try:
-            #     token = token.split(' ')[1]
-            #     decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            # except (IndexError, ExpiredSignatureError, InvalidTokenError):
-            #     return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
-            # admin_id = decoded_data.get('id')
-            # if not admin_id:
-            #     return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # vendor = Vendor.objects.filter(pk=admin_id).first()
-            # if not vendor:
-            #     return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
+            vendor = Vendor.objects.filter(pk=admin_id).first()
+            if not vendor:
+                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.all()
             serializer=CategorySerializer(category,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -115,6 +115,21 @@ class CategoryDetailView(APIView):
     
     def put(self,request,pk):
         try:
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            vendor = Vendor.objects.filter(pk=admin_id).first()
+            if not vendor:
+                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.get(pk=pk)
             serializer_obj=CategorySerializer(category,data=request.data,partial=True)
             if serializer_obj.is_valid():
@@ -130,6 +145,21 @@ class CategoryDetailView(APIView):
 
     def delete(self,request,pk):
         try:
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            vendor = Vendor.objects.filter(pk=admin_id).first()
+            if not vendor:
+                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.get(pk=pk)
             category.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -259,6 +289,11 @@ class BannerProductsView(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
 
 
 
@@ -323,7 +358,7 @@ class ProductVariantsView(APIView):
 
 
 class ProductsVariantsByID(APIView):
-    def get(self,request,pk):
+    def get(self,request,pk):        #pk=product variant id
         try:
             product=ProductVariant.objects.get(pk=pk)
             serializer=ProductVariantSerializers(product)
@@ -333,40 +368,38 @@ class ProductsVariantsByID(APIView):
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class SingleImagesView(APIView):
+
+
+class BigViewById(APIView):
     def get(self,request,pk):
         try:
-            productss=Product.objects.get(pk=pk)
-            if productss.type == "single":
-               
-                serializer=ProductSerializersssssssssss(productss)
-                print(productss)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response({'message':'Product is not single'},status=status.HTTP_400_BAD_REQUEST)
+            prodts=Product.objects.get(pk=pk)
+            print(pk)
+            print(f"Product: {prodts}")
+           
+            product_=ProductSerializersssssssssss(prodts)
+            return Response(product_.data,status=status.HTTP_200_OK)
         except Product.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+            
+
+
+
+
+        
+
+           
+               
+                
                 
 
 
         
 
-                               
-        
-
-        
-class VariantImagesView(APIView):
-    def get(self,request,pk):
-        try:
-            variantimages=VariantProductImages.objects.get(pk=pk)
-            variant_serializer=ProductVariantImageSerializer(variantimages)
-            return Response(variant_serializer.data,status=status.HTTP_200_OK)
-        except VariantProductImages.DoesNotExist:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as e:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
             
