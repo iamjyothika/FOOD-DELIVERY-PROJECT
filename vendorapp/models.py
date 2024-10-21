@@ -39,6 +39,7 @@ class Product(models.Model):
     category=models.ForeignKey('adminapp.Category',on_delete=models.CASCADE,null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description=models.TextField()
+    product_image=models.ImageField(upload_to="productimages",null=True)
     type=models.CharField(max_length=20,choices=TYPE_CHOICES,default="single")
     def __str__(self):
         return self.name

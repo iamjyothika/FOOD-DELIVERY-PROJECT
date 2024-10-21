@@ -7,3 +7,4 @@ from vendorapp.models import *
 admin.site.register(Category)
 admin.site.register(Banner)
 admin.site.register(Product)
+admin.site.register(BannerProducts)

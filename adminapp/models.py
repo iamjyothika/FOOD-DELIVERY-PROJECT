@@ -32,5 +32,8 @@ class BannerProducts(models.Model):
     banner=models.ForeignKey(Banner,on_delete=models.CASCADE,null=True)
     product=models.ForeignKey('vendorapp.Product',on_delete=models.CASCADE,null=True) 
 
+    def __str__(self):
+        return f"{self.banner.banner_name}, {self.product.name}"
+
 
 

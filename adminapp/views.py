@@ -33,32 +33,37 @@ class getAdminData(APIView):
         
 
 
-# class AdminLogin(APIView):
-#     def post(self, request):
-#         try:
-#             email=request.data['email']
-#             password=request.data['password']
+class AdminLogin(APIView):
+    def post(self, request):
+        try:
+            email=request.data.get('email')
+            password=request.data.get('password')
+
+            print(f"email  :{email} password  {password}")
+            if  email and password is None:
+                return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
             
-#             admin = User.objects.filter(email = email).first()
-#             if admin and admin.check_password(password):
-#                 expiration_time = datetime.utcnow() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
-#                 admin_token = {
-#                         'id': admin.pk, 
-#                         'email': admin.email,
-#                         'name':admin.username,
-#                         'exp': expiration_time,
-#                         'iat': datetime.utcnow() 
-#                 }
-#                 token = jwt.encode(admin_token, settings.SECRET_KEY, algorithm='HS256')
-#                 response = Response({"message": "Login successful","token": token,'name':admin.username,'contact':admin.phone}, status=status.HTTP_200_OK)
-#                 return response
-#             else:
-#                 print("invalid password")
-#                 return Response({'error': 'Invalid Email or Password'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin = User.objects.filter(email = email).first()
+            if admin and admin.check_password(password):
+                expiration_time = datetime.utcnow() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
+                admin_token = {
+                        'id': admin.pk, 
+                        'email': admin.email,
+                        'name':admin.username,
+                        'exp': expiration_time,
+                        'iat': datetime.utcnow() 
+                }
+                token = jwt.encode(admin_token, settings.SECRET_KEY, algorithm='HS256')
+                response = Response({"message": "Login successful","token": token,'name':admin.username}, status=status.HTTP_200_OK)
+                return response
+            else:
+                print("invalid password")
+                return Response({'error': 'Invalid Email or Password'}, status=status.HTTP_401_UNAUTHORIZED)
         
-#         except Exception as e:
-#             print("Exception Error   :",e)
-#             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            print("Exception Error   :",e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 
@@ -145,6 +150,15 @@ class BannerCreate(APIView):
             return Response(serializer_obj.errors,status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def get(self,request):
+        try:
+            banner=Banner.objects.all()
+            serializer=BannerSerializer(banner,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Banner.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
 
@@ -190,15 +204,7 @@ class BannerView(APIView):
 
 
 
-    def get(self,request):
-        try:
-            banner=Banner.objects.all()
-            serializer=BannerSerializer(banner,many=True)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except Banner.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+  
         
 
 class BannerDetailView(APIView):
@@ -225,46 +231,34 @@ class BannerDetailView(APIView):
 
 
         
+class BannerProductsView(APIView):
+    
+  def get(self, request, pk):
+        try:
+            # Retrieve the banner by primary key
+            banner = Banner.objects.get(pk=pk)
+            print(f"Banner: {banner}")
+
+            # Fetch all products associated with the banner
+            banner_products = BannerProducts.objects.filter(banner=banner)
             
+            # Prepare a list to hold serialized product data
+            product_data = []
 
+            # Serialize each product associated with the banner
+            for banner_product in banner_products:
+                product = banner_product.product  # Get the actual product
+                product_serializer = ProductSerializersssssssssss(product)  # Serialize the product
+                product_data.append(product_serializer.data)  # Append serialized data to the list
 
+            # Return the list of serialized products
+            return Response(product_data, status=status.HTTP_200_OK)
 
-        
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        except Banner.DoesNotExist:
+            return Response({'error': 'Banner not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -314,6 +308,85 @@ class VendorProductDetailView(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ProductVariantsView(APIView):
+    def get(self,request):
+        try:
+            product=ProductVariant.objects.all()
+            serializer=ProductVariantSerializers(product,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except ProductVariant.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ProductsVariantsByID(APIView):
+    def get(self,request,pk):
+        try:
+            product=ProductVariant.objects.get(pk=pk)
+            serializer=ProductVariantSerializers(product)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except ProductVariant.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class SingleImagesView(APIView):
+    def get(self,request,pk):
+        try:
+            productss=Product.objects.get(pk=pk)
+            if productss.type == "single":
+               
+                serializer=ProductSerializersssssssssss(productss)
+                print(productss)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response({'message':'Product is not single'},status=status.HTTP_400_BAD_REQUEST)
+        except Product.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+
+
+        
+
+                               
+        
+
+        
+class VariantImagesView(APIView):
+    def get(self,request,pk):
+        try:
+            variantimages=VariantProductImages.objects.get(pk=pk)
+            variant_serializer=ProductVariantImageSerializer(variantimages)
+            return Response(variant_serializer.data,status=status.HTTP_200_OK)
+        except VariantProductImages.DoesNotExist:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+            
+        
+
+        
+        
+
+
+
+
+        
+
+        
+
+  
+           
+          
+
+            
         
         
 
