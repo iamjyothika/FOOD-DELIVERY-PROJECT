@@ -15,7 +15,10 @@ urlpatterns = [
     path('bannerproducts/<int:pk>/',BannerProductsView.as_view()),
     path('productvariants/',ProductVariantsView.as_view()),
     path('productvariants/<int:pk>',ProductsVariantsByID.as_view()),
-    path('mainproducts/<int:pk>',BigViewById.as_view())
+    path('mainproducts/<int:pk>',BigViewById.as_view()),
+    path('useradd-get/',UsersList.as_view()),
+    path('userupdate-delete/',UsersDetail.as_view()),
+    
    
 
 

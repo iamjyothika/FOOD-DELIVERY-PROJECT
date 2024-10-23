@@ -31,4 +31,17 @@ class CartModel(models.Model):
     def __str__(self):
         return self.product.name
 
+
+class WishlistModel(models.Model):
+    user=models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    product=models.ForeignKey('vendorapp.Product',on_delete=models.CASCADE)
+    added_date=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # Ensure a user cannot add the same product multiple times to the wishlist
+
+    def __str__(self):
+        return f"{self.user} - {self.product.name}"
+
+
     

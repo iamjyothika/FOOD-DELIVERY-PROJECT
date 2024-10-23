@@ -5,7 +5,9 @@ from .models import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from vendorapp.models import *
+from userapp.models import *
 from vendorapp.serializers import *
+from userapp.serializers import *
 from .serializers import *
 from datetime import datetime, timedelta
 from django.conf import settings
@@ -86,11 +88,11 @@ class CategoryView(APIView):
                 return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
             admin_id = decoded_data.get('id')
             if not admin_id:
-                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
             
-            vendor = Vendor.objects.filter(pk=admin_id).first()
-            if not vendor:
-                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.all()
             serializer=CategorySerializer(category,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -101,6 +103,21 @@ class CategoryView(APIView):
     
     def post(self,request):
         try:
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             serializer_obj=CategorySerializer(data=request.data)
             if serializer_obj.is_valid():
                 serializer_obj.save()
@@ -125,11 +142,11 @@ class CategoryDetailView(APIView):
                 return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
             admin_id = decoded_data.get('id')
             if not admin_id:
-                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
             
-            vendor = Vendor.objects.filter(pk=admin_id).first()
-            if not vendor:
-                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
+            admin= User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Vendorad not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.get(pk=pk)
             serializer_obj=CategorySerializer(category,data=request.data,partial=True)
             if serializer_obj.is_valid():
@@ -155,11 +172,11 @@ class CategoryDetailView(APIView):
                 return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
             admin_id = decoded_data.get('id')
             if not admin_id:
-                return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
             
-            vendor = Vendor.objects.filter(pk=admin_id).first()
-            if not vendor:
-                return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             category=Category.objects.get(pk=pk)
             category.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -173,6 +190,21 @@ class CategoryDetailView(APIView):
 class BannerCreate(APIView):
     def post(self,request):
         try:
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             serializer_obj=BannerSerializer(data=request.data)
             if serializer_obj.is_valid():
                 serializer_obj.save()
@@ -182,6 +214,23 @@ class BannerCreate(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     def get(self,request):
         try:
+            
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
+
             banner=Banner.objects.all()
             serializer=BannerSerializer(banner,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -204,6 +253,22 @@ class BannerCreate(APIView):
 class BannerView(APIView):
     def post(self, request):
         try:
+            
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             banner_id = request.data.get('id')
             print(banner_id)
             if banner_id:
@@ -240,6 +305,22 @@ class BannerView(APIView):
 class BannerDetailView(APIView):
     def put(self,request,pk):
         try:
+            
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             banners=Banner.objects.get(pk=pk)
             bannerserializer=BannerSerializer(banners,data=request.data,partial=True)
             if bannerserializer.is_valid():
@@ -253,6 +334,22 @@ class BannerDetailView(APIView):
         
     def delete(self,request,pk) :
         try:
+             
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             banner_data=Banner.object.get(pk=pk) 
             banner_data.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -265,6 +362,22 @@ class BannerProductsView(APIView):
     
   def get(self, request, pk):
         try:
+             
+            token=request.headers.get("Authorization")
+            if not token:
+                return Response({'error':'Token is missing'},status=status.HTTP_401_UNAUTHORIZED)
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            admin_id = decoded_data.get('id')
+            if not admin_id:
+                return Response({'error': 'Admin ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            admin = User.objects.filter(pk=admin_id).first()
+            if not admin:
+                return Response({'error': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
             # Retrieve the banner by primary key
             banner = Banner.objects.get(pk=pk)
             print(f"Banner: {banner}")
@@ -384,6 +497,55 @@ class BigViewById(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class UsersList(APIView):
+    def get(self,request):
+        try:
+            users=UserModel.objects.all()
+            user_serializer=UserSerializer(users,many=True)
+            return Response(user_serializer.data,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except UserModel.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self,request):
+        try:
+            user_serializerr=UserSerializer(data=request.data)
+            if user_serializerr.is_valid():
+                user_serializerr.save()
+                return Response(user_serializerr.data,status=status.HTTP_201_CREATED)
+            return Response(user_serializerr.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UsersDetail(APIView):
+    def patch(self,request,pk):
+        try:
+            users=UserModel.objects.get(pk=pk)
+            userserializerr_obj=UserSerializer(users,data=request.data)
+            if userserializerr_obj.is_valid():
+                userserializerr_obj.save()
+                return Response(userserializerr_obj.data,status=status.HTTP_200_OK)
+            return Response(userserializerr_obj.errors,status=status.HTTP_400_BAD_REQUEST) 
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    def delete(self,request,pk):
+        try:
+            userrss=UserModel.objects.get(pk=pk)
+            userrss.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except UserModel.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        
+
         
             
 

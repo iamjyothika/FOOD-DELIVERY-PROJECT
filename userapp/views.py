@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
 from .models import *
+from userapp.models import *
 from datetime import datetime, timedelta
 from django.conf import settings
 import jwt
@@ -36,7 +37,7 @@ class UserLogin(APIView):
             password = request.data.get('password')
 
 
-            user = user.objects.filter(email = email).first()
+            user = UserModel.objects.filter(email = email).first()
 
             if  user and user.check_password(password):
                 expiration_time = datetime.utcnow() + timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
@@ -151,7 +152,7 @@ class CartView(APIView):
             if not user_id:
                 return Response({'error': 'Vendor ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
             
-            user = Vendor.objects.filter(pk=user_id).first()
+            user = UserModel.objects.filter(pk=user_id).first()
             if not user:
                 return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -164,6 +165,85 @@ class CartView(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class AddWishlist(APIView):
+    def post(self,request):
+        try:
+            token = request.headers.get("Authorization")
+            if not token:
+                 return Response({'error': 'Authorization token missing'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            user_id = decoded_data.get('id')
+            if not user_id:
+                return Response({'error': 'User ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.filter(pk=user_id).first()
+            if not user:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            product_id = request.data.get('product_id')
+            if not product_id:
+                return Response({'error': 'Product ID missing'}, status=status.HTTP_400_BAD_REQUEST)
+            wishlist_item, created = WishlistModel.objects.get_or_create(user=request.user, product_id=product_id)
+            if created:
+                return Response({"message": "Product added to wishlist successfully","cart_item": wishlist_item.data}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message": "Product is already in your wishlist"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+          
+         
+           
+            
+       
+
+
+    def delete(self, request):
+        
+        try:
+            token = request.headers.get("Authorization")
+            if not token:
+                return Response({'error': 'Authorization token missing'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            try:
+                token = token.split(' ')[1]
+                decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            except (IndexError, ExpiredSignatureError, InvalidTokenError):
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            user_id = decoded_data.get('id')
+            if not user_id:
+                return Response({'error': 'User ID missing in token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.filter(pk=user_id).first()
+            if not user:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            product_id = request.data.get('product_id')
+            wishlist_item = WishlistModel.objects.get(user=request.user, product_id=product_id)
+            wishlist_item.delete()
+            return Response({"message": "Product removed from wishlist"}, status=status.HTTP_204_NO_CONTENT)
+        except WishlistModel.DoesNotExist:
+            return Response({"error": "Product not found in your wishlist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+        
+            
+            
+            
+
+
+
 
         
             

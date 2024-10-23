@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from adminapp.serializers import *
+from vendorapp.serializers import *
 
 class UserSerializer(serializers.ModelSerializer):
     password=serializers.CharField()
@@ -49,7 +50,7 @@ class ProductSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'description','type']   
+        fields = ['id', 'name', 'price', 'description','type','product_image']   
 
 class SingleImageSerializer(serializers.ModelSerializer):
     
@@ -93,4 +94,12 @@ class CartModelSerializer(serializers.ModelSerializer):
             product=product,
             defaults={'quantity': quantity}
         )
-        return cart_item                 
+        return cart_item 
+
+class WishlistSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)  # Nested product details
+
+    class Meta:
+        model = WishlistModel
+        fields = ['id', 'user', 'product', 'added_date']
+        read_only_fields = ['user', 'added_date']                   
