@@ -472,6 +472,13 @@ class UsersList(BaseTokenView):
             user_serializerr,error_response = self.get_user_from_token(request)
             if error_response:
                 error_response
+            email = request.data.get("email")
+            if UserModel.objects.filter(email=email).exists():
+                return Response(
+                    {"error": "User with this email already exists"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
             user_serializerr=UserSerializer(data=request.data)
             if user_serializerr.is_valid():
                 user_serializerr.save()
@@ -486,13 +493,13 @@ class UsersDetail(BaseTokenView):
         try:
             userserializerr_obj,error_response = self.get_user_from_token(request)
             if error_response:
-                error_response
+                return error_response
 
             users=UserModel.objects.get(pk=pk)
-            userserializerr_obj=UserSerializer(users,data=request.data)
+            userserializerr_obj=UserSerializer(users,data=request.data,partial=True)
             if userserializerr_obj.is_valid():
                 userserializerr_obj.save()
-                return Response(userserializerr_obj.data,status=status.HTTP_200_OK)
+                return Response({"message":"user created"},userserializerr_obj.data,status=status.HTTP_200_OK)
             return Response(userserializerr_obj.errors,status=status.HTTP_400_BAD_REQUEST) 
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -505,7 +512,7 @@ class UsersDetail(BaseTokenView):
                 error_response
             userrss=UserModel.objects.get(pk=pk)
             userrss.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"message":"user deleted"},status=status.HTTP_204_NO_CONTENT)
         except UserModel.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

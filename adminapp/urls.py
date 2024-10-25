@@ -17,7 +17,7 @@ urlpatterns = [
     path('productvariants/<int:pk>',ProductsVariantsByID.as_view()),
     path('mainproducts/<int:pk>',BigViewById.as_view()),
     path('useradd-get/',UsersList.as_view()),
-    path('userupdate-delete/',UsersDetail.as_view()),
+    path('userupdate-delete/<int:pk>',UsersDetail.as_view()),
     
    
 
