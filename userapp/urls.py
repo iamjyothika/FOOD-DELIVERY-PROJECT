@@ -12,7 +12,8 @@ urlpatterns = [
     path('bigview/',BigViewProducts.as_view()),
     path('addtocart/',CartView.as_view()),
     path('update-deletecart/<int:cart_item_id>',UpdateCartItemView.as_view()),
-    path('addwish/',AddWishlist.as_view())
+    path('addwish/',AddWishlist.as_view()),
+    path('deletewish/<int:wishlist_id>',Wishlistdetail.as_view()),
     
 
 

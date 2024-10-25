@@ -278,6 +278,8 @@ class AddWishlist(BaseTokenView):
         except Exception as e:
             print(e)
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            
     
 
           
@@ -285,16 +287,16 @@ class AddWishlist(BaseTokenView):
            
             
        
+class Wishlistdetail(BaseTokenView):
 
-
-    def delete(self, request):
+    def delete(self,request,wishlist_id):
         
         try:
-            product_id, error_response = self.get_user_from_token(request)
+            user, error_response = self.get_user_from_token(request)
             if error_response:
                 return error_response
-            product_id = request.data.get('product_id')
-            wishlist_item = WishlistModel.objects.get(user=request.user, product_id=product_id)
+           
+            wishlist_item = WishlistModel.objects.get(user=user, pk=wishlist_id)
             wishlist_item.delete()
             return Response({"message": "Product removed from wishlist"}, status=status.HTTP_204_NO_CONTENT)
         except WishlistModel.DoesNotExist:
