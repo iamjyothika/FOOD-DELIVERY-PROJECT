@@ -82,19 +82,11 @@ class CartModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartModel
-        fields = ['id', 'user', 'product', 'product_id', 'quantity']
+        fields = ['id', 'product', 'product_id', 'quantity']
+        read_only_fields = ['user']
 
-    def create(self, validated_data):
-        user = validated_data.get('user')
-        product = validated_data.get('product')
-        quantity = validated_data.get('quantity')
 
-        cart_item, created = CartModel.objects.update_or_create(
-            user=user,
-            product=product,
-            defaults={'quantity': quantity}
-        )
-        return cart_item 
+       
 
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)  # Nested product details
