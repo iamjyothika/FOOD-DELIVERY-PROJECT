@@ -6,3 +6,4 @@ from .models import *
 admin.site.register(UserModel)
 admin.site.register(CartModel)
 admin.site.register(WishlistModel)
+admin.site.register(OTPModel)

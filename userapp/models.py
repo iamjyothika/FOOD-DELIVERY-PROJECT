@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from vendorapp.models import *
+from django.utils import timezone
+from datetime import timedelta
 
 
 
 # Create your models here.
 class UserModel(models.Model):
-    email=models.EmailField(max_length=20)
+    email=models.EmailField(max_length=40)
     password=models.CharField(max_length=20)
     phone_no=models.IntegerField()
     def __str__(self):
@@ -42,6 +44,16 @@ class WishlistModel(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.product.name}"
+    
+class OTPModel(models.Model):
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+   
+
+    def is_valid(self):
+        # OTP is valid for 15 minutes
+        expiration_time = self.created_at + timedelta(minutes=15)
+        return timezone.now() <= expiration_time and not self.is_used      
 
 
     
