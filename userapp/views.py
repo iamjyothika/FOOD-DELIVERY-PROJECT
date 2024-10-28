@@ -144,7 +144,7 @@ class VerifyOTPView(BaseTokenView):
                 return Response({"message": "OTP not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
-            user = User.objects.filter(email=email).first()
+            user = UserModel.objects.filter(email=email).first()
             if not user:
                 return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -166,7 +166,7 @@ class ChangePasswordView(APIView):
             email = request.data.get('email')
             new_password = request.data.get('new_password')
             confirm_password = request.data.get('confirm_password')
-            user = User.objects.filter(email=email).first()
+            user = UserModel.objects.filter(email=email).first()
             if not user:
                 return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -396,6 +396,9 @@ class Wishlistdetail(BaseTokenView):
             return Response({"message": "Product removed from wishlist"}, status=status.HTTP_204_NO_CONTENT)
         except WishlistModel.DoesNotExist:
             return Response({"error": "Product not found in your wishlist"}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
 
 
 
